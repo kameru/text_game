@@ -12,12 +12,27 @@ export const getScenarioText = async (filename) => {
 
 export const parseScenario = (texts) => {
     const result = [];
-    for (let text of texts) {
+    while (texts.length > 0) {
+        let text = texts.shift();
         if (text.startsWith('>')) {
+            const buttons = [];
+            let index = 0;
+            while (text && (text.startsWith('>') || text.startsWith(':') || text.startsWith(';'))) {
+                if (text.startsWith('>')) {
+                    buttons[index] = {};
+                    buttons[index].text = text.replace('>', '');
+                    text = texts.shift();
+                } else {
+                    buttons[index].next = text.startsWith(':') ? {type: TEXT_TYPE.TEXT, text: text.replace(':', '')}
+                    : text.startsWith(';') ? {type: TEXT_TYPE.JUMP, label: text.replace(';', '')} : null;
+                    index++;
+                    text = texts.shift();
+                }
+            }
             result.push({
                 type: TEXT_TYPE.CHOICE,
-                text: text.replace('>', '')
-            });
+                buttons: buttons
+            });    
         } else {
             result.push({
                 type: TEXT_TYPE.TEXT,

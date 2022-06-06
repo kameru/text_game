@@ -1,25 +1,35 @@
 <script>
-    import {TEXT_TYPE} from "../../const/const"
-    import { getScenarioText, parseScenario } from "../../util.js";
+import { onMount } from "svelte";
+
+import {TEXT_TYPE} from "../../const/const"
+import { getScenarioText, parseScenario } from "../../util.js";
+import ChoiceButton from "./ChoiceButton.svelte";
 
     let scripts = [];
-    let scenario = []
-    const promise = getScenarioText('prologue').then((data) => {
-        scenario = parseScenario(data);
-        scripts.push(scenario.shift());
-    });
+    let scenario = [];
 
+    async function getScenario (filename) {
+        await getScenarioText(filename).then((data) => {
+            scenario.unshift(...parseScenario(data))
+        });
+    }
+
+    let promise = getScenario('prologue').then(() => {
+        scripts = [...scripts, scenario.shift()];            
+    });
+    
     function goToNextText() {
         if (scenario.length === 0) {return;}
-        if (scenario[0].type === TEXT_TYPE.CHOICE) {
-            while (scenario[0] && scenario[0].type === TEXT_TYPE.CHOICE) {
-                scripts.push(scenario.shift());
-            }
-            scripts = [...scripts];
+        if (scenario[0].type === TEXT_TYPE.JUMP) {
+            getScenario(scenario[0].label).then(() => {
+                scripts = [...scripts, scenario.shift()];            
+            });
         } else {
             scripts = [...scripts, scenario.shift()];
         }
     }
+
+
 </script>
 
 <svelte:window on:click="{goToNextText}"/>
@@ -29,15 +39,10 @@
 {:then}
 {#each scripts as script}
     {#if script.type === TEXT_TYPE.CHOICE} 
-        <button>{script.text}</button>
+        <ChoiceButton {script} onChoice="{(script) => {scenario.push(script)}}"/>
         {:else}
         <p>{script.text}</p>
     {/if}
 {/each}
 {/await}
 
-<style>
-    button {
-        width: 100%
-    }
-</style>
