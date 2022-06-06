@@ -3,7 +3,7 @@ import { TEXT_TYPE } from './const/const';
 
 export const getScenarioText = async (filename) => {
     let text = ''
-    await axios.get(`/scenario/${filename}`).then(({data}) => {
+    await axios.get(`${import.meta.env.BASE_URL}/scenario/${filename}`).then(({data}) => {
         text = data;
     });
     
