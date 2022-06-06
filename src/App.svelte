@@ -1,6 +1,6 @@
 <script>
   import Title from './components/Title.svelte'
-  import Adventure from './components/Adventure.svelte';
+  import Adventure from './components/Adventure/Adventure.svelte';
 
   let _mode = 'TITLE'
   const changeMode = (mode='ADVENTURE') => {
